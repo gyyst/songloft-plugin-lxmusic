@@ -1,6 +1,13 @@
 name: Release Plugin
 
+# 自动发布：
+# - 推送 v* 标签时自动构建并发布对应版本；
+# - 也可以在 Actions 页面手动触发，版本号留空时使用日期版本 YYYY.M.D。
+
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -8,96 +15,137 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: write
+
+concurrency:
+  group: release-plugin
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Resolve version
         id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            VERSION="${INPUT_VERSION#v}"
+          elif [ "$EVENT_NAME" = "push" ]; then
+            VERSION="${REF_NAME#v}"
           else
             VERSION="$(date -u +%Y.%-m.%-d)"
           fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Generated version: ${VERSION}"
-
-      - name: Update version in plugin.json / package.json
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          node -e "
-            const fs = require('fs');
-            for (const f of ['plugin.json', 'package.json']) {
-              const p = JSON.parse(fs.readFileSync(f, 'utf-8'));
-              p.version = '${VERSION}';
-              fs.writeFileSync(f, JSON.stringify(p, null, 2) + '\n');
-            }
-          "
-
-      - name: Build
-        run: npm run build
-
-      - name: Extract plugin info
-        id: plugin_info
-        run: |
-          ENTRY_PATH=$(node -p "require('./plugin.json').entryPath")
-          ZIP_NAME="${ENTRY_PATH}.jsplugin.zip"
-          echo "entryPath=${ENTRY_PATH}" >> $GITHUB_OUTPUT
-          echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release on this repo
-        id: create_release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          ZIP_NAME="${{ steps.plugin_info.outputs.zip_name }}"
-          TAG="v${VERSION}"
-
-          # 删除已存在的同名 Release / Tag（重发版兼容）
-          if gh release view "${TAG}" &>/dev/null; then
-            gh release delete "${TAG}" --yes --cleanup-tag
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9A-Za-z][0-9A-Za-z._-]*$'; then
+            echo "::error::无效的版本号: $VERSION"
+            exit 1
           fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "发布版本: $VERSION"
 
-          gh release create "${TAG}" \
-            "dist/${ZIP_NAME}" \
-            --title "v${VERSION}" \
-            --notes "自动构建的 JS 插件 v${VERSION}"
-
-          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ZIP_NAME}"
-          echo "download_url=${DOWNLOAD_URL}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-
-      - name: Commit version bump on current branch
+      - name: Prepare manifest
+        id: manifest
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          DOWNLOAD_URL="${{ steps.create_release.outputs.download_url }}"
+          ENTRY_PATH="$(node -p "require('./plugin.json').entryPath")"
+          ZIP_NAME="${ENTRY_PATH}.jsplugin.zip"
+          TAG="v${VERSION}"
+          DOWNLOAD_URL="https://github.com/${REPOSITORY}/releases/download/${TAG}/${ZIP_NAME}"
+          UPDATE_URL="https://raw.githubusercontent.com/${REPOSITORY}/main/plugin.json"
+          export VERSION DOWNLOAD_URL UPDATE_URL
           node -e "
             const fs = require('fs');
-            const p = JSON.parse(fs.readFileSync('plugin.json', 'utf-8'));
-            p.version = '${VERSION}';
-            p.download_url = '${DOWNLOAD_URL}';
-            fs.writeFileSync('plugin.json', JSON.stringify(p, null, 2) + '\n');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
-            pkg.version = '${VERSION}';
+            const plugin = JSON.parse(fs.readFileSync('plugin.json', 'utf8'));
+            plugin.version = process.env.VERSION;
+            plugin.download_url = process.env.DOWNLOAD_URL;
+            plugin.updateUrl = process.env.UPDATE_URL;
+            fs.writeFileSync('plugin.json', JSON.stringify(plugin, null, 2) + '\n');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = process.env.VERSION;
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
+          {
+            echo "entry_path=$ENTRY_PATH"
+            echo "zip_name=$ZIP_NAME"
+            echo "tag=$TAG"
+            echo "download_url=$DOWNLOAD_URL"
+          } >> "$GITHUB_OUTPUT"
+          echo "产物: dist/${ZIP_NAME}"
+          echo "下载地址: ${DOWNLOAD_URL}"
+
+      - name: Build and validate
+        run: |
+          npm run build
+          npm run validate
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.manifest.outputs.tag }}
+          ZIP_NAME: ${{ steps.manifest.outputs.zip_name }}
+        run: |
+          NOTES="自动构建的洛雪音源插件 v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "dist/${ZIP_NAME}" --clobber
+            gh release edit "$TAG" --title "v${VERSION}" --notes "$NOTES"
+          else
+            gh release create "$TAG" "dist/${ZIP_NAME}" \
+              --title "v${VERSION}" \
+              --notes "$NOTES" \
+              --target "$GITHUB_SHA"
+          fi
+
+      - name: Commit release metadata to main
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DOWNLOAD_URL: ${{ steps.manifest.outputs.download_url }}
+        run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+
+          # 标签指向历史提交时，避免把旧版本的哈希写回最新的 main。
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            echo "::warning::当前提交不是 main 最新提交，跳过 plugin.json 回写"
+            exit 0
+          fi
+
+          # 保存构建后的清单（package.json 的 version / plugin.json 的 version、
+          # download_url 与构建产出的 entryHash / zipHash）。
+          cp plugin.json /tmp/release-plugin.json
+          cp package.json /tmp/release-package.json
+          git checkout -B main origin/main
+          cp /tmp/release-plugin.json plugin.json
+          cp /tmp/release-package.json package.json
           git add plugin.json package.json
-          git diff --staged --quiet || git commit -m "chore(release): bump to v${VERSION}"
-          git push
+
+          if git diff --staged --quiet; then
+            echo "清单无变化，无需提交"
+            exit 0
+          fi
+
+          git commit -m "chore(release): v${VERSION}"
+          git push origin main
+          echo "已回写 download_url: ${DOWNLOAD_URL}"
