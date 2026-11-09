@@ -91,16 +91,41 @@ export function resolvePlatforms(ctx: AppContext, sourceId: unknown, explicitPla
   return requested.filter(isPlatform) as PlatformId[]
 }
 
-/** 并行搜索多个平台，交错合并结果。 */
+/** Promise 超时包装；超时后底层请求仍会继续，但不再阻塞调用方。 */
+function withTimeout<T>(task: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`搜索超时（>${timeoutMs}ms）`)), timeoutMs)
+    task.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (err) => {
+        clearTimeout(timer)
+        reject(err)
+      },
+    )
+  })
+}
+
+/**
+ * 并行搜索多个平台，交错合并结果。
+ * timeoutMs > 0 时给每个平台单独限时，超时的平台按空结果处理，
+ * 避免单个慢接口拖垮整体（语音助手的外部搜索超时通常只有 6 秒）。
+ */
 export async function searchPlatforms(
   platforms: PlatformId[],
   keyword: string,
   page = 1,
   pageSize = 20,
+  timeoutMs = 0,
 ): Promise<any[]> {
   const unique = Array.from(new Set(platforms))
   const settled = await Promise.allSettled(
-    unique.map((platform) => sdkSearch(platform, keyword, page, pageSize)),
+    unique.map((platform) => {
+      const task = sdkSearch(platform, keyword, page, pageSize)
+      return timeoutMs > 0 ? withTimeout(task, timeoutMs) : task
+    }),
   )
   const lists: any[][] = []
   const errors: string[] = []

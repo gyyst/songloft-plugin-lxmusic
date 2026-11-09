@@ -5,7 +5,7 @@ import { DEFAULT_QUALITY, ENTRY_PATH, MAX_IMPORT_SONGS } from '../constants'
 import { Buffer, base64Encode, base64Decode } from '../utils/buffer'
 import { callHostAPI } from '../utils/http'
 import { parseJsonBody } from '../utils/text'
-import type { AppContext } from './shared'
+import type { AppContext, MatchHint } from './shared'
 import {
   ALL_PLATFORMS,
   intervalToSeconds,
@@ -31,13 +31,23 @@ async function searchSongItems(
   page: number,
   pageSize: number,
   quality: string,
+  timeoutMs = 0,
 ): Promise<any[]> {
-  const raw = await searchPlatforms(platforms, keyword, page, pageSize)
+  const raw = await searchPlatforms(platforms, keyword, page, pageSize, timeoutMs)
   return raw.map((song) => toSongItem(song, String(song?.source || platforms[0] || ''), quality))
 }
 
 /** 用 source_data 解析真实播放 URL（供 /api/music/url 与 Direct 共用）。 */
 async function resolveSourceData(ctx: AppContext, sourceData: any): Promise<{ url: string; headers?: Record<string, string>; quality: string; sourceId: string; sourceName: string }> {
+  // 宿主存库时 source_data 是字符串；/api/music/url 契约是对象。
+  // 两种形态都接受，避免 remote 曲目回放时因序列化差异解析失败。
+  if (typeof sourceData === 'string') {
+    try {
+      sourceData = JSON.parse(sourceData)
+    } catch {
+      throw new Error('source_data 不是合法的 JSON')
+    }
+  }
   if (!sourceData || typeof sourceData !== 'object') throw new Error('source_data 不能为空')
   const platform = String(sourceData.platform || sourceData.source || '').toLowerCase()
   if (!isPlatform(platform)) throw new Error('source_data 缺少合法的 platform')
@@ -117,6 +127,46 @@ function buildLyricPath(platform: string, songInfo: any): string {
   return `/api/v1/jsplugin/${ENTRY_PATH}/api/direct/lyric?platform=${encodeURIComponent(platform)}&si=${encodeURIComponent(si)}`
 }
 
+/** 跨会话稳定的去重键：优先 songmid → musicId → hash → copyrightId。 */
+function buildDedupKey(platform: string, songInfo: any): string {
+  const value = songInfo?.songmid ?? songInfo?.musicId ?? songInfo?.hash ?? songInfo?.copyrightId
+  if (value === undefined || value === null || value === '') return ''
+  return `${platform}:${String(value)}`
+}
+
+/**
+ * 补齐语音助手（如 mi-song-gpt）消费 topone 结果所需的字段：
+ * - plugin_entry_path：告诉宿主播放时回调哪个插件解析 URL；
+ * - dedup_key：入库去重；
+ * - lyric/lyric_source：歌词 URL（宿主 LyricFetcher 格式）。
+ * 缺 plugin_entry_path 时，解析型结果入 remote 库后将无法回放。
+ */
+function withVoiceFields(item: any): any {
+  const platform = String(item?.platform || '')
+  const songInfo = item?.source_data?.songInfo || {}
+  const lyricPath = platform && isPlatform(platform) ? buildLyricPath(platform, songInfo) : ''
+  return {
+    ...item,
+    plugin_entry_path: ENTRY_PATH,
+    dedup_key: buildDedupKey(platform, songInfo),
+    ...(lyricPath ? { lyric: lyricPath, lyric_source: 'url' } : {}),
+  }
+}
+
+/** 语音助手会额外下发结构化的 title/artist/duration，用于在候选里挑更准的一首。 */
+function normalizeVoiceHint(raw: any): MatchHint | null {
+  if (!raw || typeof raw !== 'object') return null
+  const title = String(raw.title || '').trim()
+  if (!title) return null
+  const artist = String(raw.artist || '').trim()
+  const duration = Number(raw.duration)
+  return {
+    title,
+    ...(artist ? { artist } : {}),
+    ...(Number.isFinite(duration) && duration > 0 ? { duration } : {}),
+  }
+}
+
 function buildImportPayload(ctx: AppContext, items: any[], withLyric: boolean): any[] {
   const payload: any[] = []
   for (const raw of items) {
@@ -126,8 +176,7 @@ function buildImportPayload(ctx: AppContext, items: any[], withLyric: boolean): 
     if (!ctx.runtimes.hasReadySource(platform)) {
       // 没有音源也能入库，但播放时会失败；这里不阻塞导入，交给运行时兜底。
     }
-    const dedupValue = songInfo.songmid ?? songInfo.musicId ?? songInfo.hash ?? songInfo.copyrightId
-    const dedupKey = dedupValue === undefined || dedupValue === null || dedupValue === '' ? '' : `${platform}:${String(dedupValue)}`
+    const dedupKey = buildDedupKey(platform, songInfo)
     const entry: any = {
       title: String(item.title || songInfo.name || songInfo.songName || '').trim() || '未知歌曲',
       artist: String(item.artist || singerText(songInfo.singer) || ''),
@@ -283,7 +332,8 @@ export function registerSearchRoutes(router: Router, ctx: AppContext): void {
     }
   })
 
-  // 三合一：搜索并选出最佳匹配
+  // 三合一：搜索并选出最佳匹配。同时用作 mi-song-gpt 等语音助手的外部搜索源：
+  // 请求 {keyword, hint?, quality}，返回可直接入库/回放的 topone 结构。
   router.post('/api/search/topone', async (req) => {
     try {
       const body = parseJsonBody(req.body)
@@ -292,13 +342,23 @@ export function registerSearchRoutes(router: Router, ctx: AppContext): void {
       const platforms = resolvePlatforms(ctx, body.source_id, body.platforms)
       const quality = qualityOrDefault(body.quality)
       const pageSize = Math.min(Math.max(Number(body.page_size) || 10, 1), 30)
-      const items = await searchSongItems(platforms, keyword, 1, pageSize, quality)
+      // mi-song-gpt 默认 6 秒超时：给单平台限时 4.5 秒，保证整体能按期返回。
+      const items = await searchSongItems(platforms, keyword, 1, pageSize, quality, 4500)
       if (!items.length) return fail('没有找到匹配的歌曲', 404)
-      const best = pickBestForKeyword(items, keyword) || { item: items[0], score: 0 }
+
+      // 优先从已有就绪音源的平台里挑：搜得到但没导入对应音源脚本的结果，
+      // 在语音点播时必然解析失败，表现为「小爱说在搜但没声音」。
+      const playable = items.filter((item) => ctx.runtimes.hasReadySource(String(item.platform || '')))
+      const pool = playable.length ? playable : items
+
+      const hint = normalizeVoiceHint(body.hint)
+      let best = hint ? pickBestMatch(pool, hint) : null
+      if (!best || best.score < 0.35) best = pickBestForKeyword(pool, keyword)
+      const item = best?.item || pool[0]
       return ok({
-        ...best.item,
-        score: Number(best.score.toFixed(3)),
-        candidates: items.slice(0, 10),
+        ...withVoiceFields(item),
+        score: Number((best?.score || 0).toFixed(3)),
+        candidates: items.slice(0, 10).map(withVoiceFields),
       })
     } catch (err) {
       return fail((err as Error)?.message || String(err), 500)

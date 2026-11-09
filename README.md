@@ -18,6 +18,7 @@
 | 歌单 | 各平台歌单标签、排序、列表、详情与歌单搜索。 |
 | 排行榜 | 各平台榜单列表与榜单歌曲。 |
 | 导入曲库 | 批量写入宿主机库（去重键优先 `songmid → musicId → hash → copyrightId`），可自动附带歌词并加入指定歌单。 |
+| 语音点歌 | 自动注册为 [mi-song-gpt](https://github.com/wyrt000/mi-song-gpt) 的外部搜索源，小米音箱说「播放 XX」即可经洛雪音源解析并推流。 |
 
 ## 与 Songloft 的接口
 
@@ -45,9 +46,65 @@
 | `GET` | `/api/leaderboard/{boards,list}` | 排行榜浏览。 |
 | `POST` | `/api/direct/music/url` | 直接解析播放链接（返回统一 `{code,msg,data}`）。 |
 | `GET` | `/api/direct/lyric` | 歌词；默认返回宿主 LyricFetcher 需要的 `{code:0,data:{lyric,tlyric}}`，`format=text` 返回纯 LRC。 |
-| `POST` | `/api/search/topone` | 搜索并返回最佳匹配（三合一）。 |
+| `POST` | `/api/search/topone` | 搜索并返回最佳匹配（三合一）；同时是 mi-song-gpt 的外部搜索源契约，返回含 `plugin_entry_path`、`dedup_key`、歌词 URL 的可入库结构。 |
 
 插件自带静态页面 `/api/v1/jsplugin/lxmusic/`，包含搜索、导入、音源管理三个标签页。
+
+## 与小米智能音箱配合（mi-song-gpt）
+
+[mi-song-gpt](https://github.com/wyrt000/mi-song-gpt) 是运行在 Songloft 上的小爱音箱插件：它监听音箱语音指令，本地曲库未命中时按优先级调用外部搜索源，拿到结果后交给 Songloft 入库，并通过 MIoT / MiNA 把播放 URL 推给音箱。本插件把 `/api/search/topone` 注册为它的外部搜索源，语音点歌链路如下：
+
+```
+小米音箱（小爱）
+  ↕ MIoT 云 / MiNA
+Songloft + mi-song-gpt（智能音箱插件）
+  ↕ songloft.comm（注册搜索源）+ loopback HTTP（POST /api/search/topone）
+本插件（lxmusic）
+  ↕ QuickJS 沙箱内的洛雪音源脚本
+酷我 / 酷狗 / QQ 音乐 / 网易云 / 咪咕
+```
+
+### 前置条件
+
+1. Songloft 已安装并启用 mi-song-gpt，完成小米账号登录、音箱启用，且 `server_host` 配置为**音箱可访问的局域网/公网地址**（不能是 `127.0.0.1`）。
+2. 本插件已导入至少一个可用的洛雪音源脚本，并在「音源管理」中启用。搜索本身不依赖脚本，但播放链接解析依赖它。
+3. 如果 mi-song-gpt 的「外部搜索」设置要求先开语音功能，需同时开启「对话监听」与「语音口令」。
+
+### 配置步骤
+
+1. **安装/重载本插件**。插件初始化时会调用
+   `songloft.comm.call('mi-song-gpt', 'register-search-provider', {...})`
+   把自身注册为搜索源候选。若 mi-song-gpt 尚未安装，注册会静默失败；之后打开本插件页面（或重启本插件）会自动重试，注册接口幂等。
+2. **在 mi-song-gpt 中启用搜索源**：打开 mi-song-gpt 插件页 → 语音设置 →「外部搜索」：
+   - 开启「启用外部搜索」；
+   - 在「已安装搜索源」的快速选择里选「洛雪音源」，它会加入
+     `/api/v1/jsplugin/lxmusic/api/search/topone` 并启用；
+   - 按需设置搜索优先级（本地优先 / 外部优先 / 并行）与超时（建议 ≥ 6 秒）。
+   - 若没有自动出现，也可手动添加上述 URL（相对路径即可）。
+3. **对音箱说**「播放晴天」「我想听周杰伦的晴天」。mi-song-gpt 解析出歌名后先查本地曲库；未命中则请求本插件的 `POST /api/search/topone`。本插件返回：
+   ```json
+   {
+     "code": 0,
+     "data": {
+       "title": "晴天",
+       "artist": "周杰伦",
+       "plugin_entry_path": "lxmusic",
+       "source_data": { "platform": "tx", "quality": "320k", "songInfo": { "...": "..." } },
+       "dedup_key": "tx:xxxx",
+       "lyric": "/api/v1/jsplugin/lxmusic/api/direct/lyric?...",
+       "lyric_source": "url"
+     }
+   }
+   ```
+   mi-song-gpt 用 `/api/v1/songs/remote` 把结果写入宿主曲库；音箱点播时宿主再回调本插件 `/api/music/url`，由音源脚本实时解析出真实播放地址。
+
+### 行为说明与排错
+
+- **解析型结果**：本插件不返回音频直链，因此 mi-song-gpt 的「不入库直接播放」对洛雪结果不生效，首次点播会生成一条 remote 曲目。之后每次播放都会重新解析，音源的临时链接过期不会影响回放。
+- **音质/格式**：小米音箱对 mp3 兼容性最好。若音源脚本只返回 flac 等格式，请在 mi-song-gpt 播放设置中开启「强制 MP3」/「音量均衡」，由 Songloft 转码后推流。
+- **搜到但没声音**：先确认对应平台有已启用的音源脚本。本插件会优先从「音源已就绪」的平台中挑歌；若所有平台都没有音源，会退回普通搜索结果（能搜到但播放必然失败）。
+- **注册失败**：常见原因是 mi-song-gpt 未安装/未启用、Songloft 宿主版本不满足 mi-song-gpt 的要求（其清单要求 2.9.5+，插件间 `comm` 也依赖较新的宿主）、或本插件清单缺少 `inter-plugin` 权限。注册失败不影响搜索、音源管理、手动导入等原有功能。
+- **排查日志**：mi-song-gpt 侧看 `[OnlineSearcher]` 前缀日志（请求 URL、响应状态与 body）；本插件侧看 `/api/search/topone`、`/api/music/url` 的报错。
 
 ## 开发与构建
 

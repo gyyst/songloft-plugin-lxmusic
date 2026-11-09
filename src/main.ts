@@ -3,6 +3,7 @@ import { jsonResponse, type HTTPRequest, type HTTPResponse, type Router } from '
 import { RuntimeManager } from './engine'
 import { SourceManager } from './source/manager'
 import { createAppRouter } from './handlers'
+import { ensureMiSongGptRegistration } from './integrations/miSongGpt'
 import type { AppContext } from './handlers/shared'
 
 let ctx: AppContext | null = null
@@ -46,6 +47,8 @@ async function onInit(): Promise<void> {
   try {
     await ensureInit()
     songloft.log.info('洛雪音源插件已初始化')
+    // 异步注册为 mi-song-gpt 的外部搜索源候选；未安装时静默失败，不阻塞初始化。
+    void ensureMiSongGptRegistration()
   } catch (err) {
     songloft.log.error('洛雪音源插件初始化失败: ' + errorMessage(err))
   }
@@ -65,6 +68,8 @@ async function onDeinit(): Promise<void> {
 async function onHTTPRequest(req: HTTPRequest): Promise<HTTPResponse> {
   try {
     await ensureInit()
+    // 若 mi-song-gpt 在本插件之后才安装/启用，打开插件页面时补一次注册（内部 60s 节流）。
+    void ensureMiSongGptRegistration()
     if (!router) throw new Error('路由尚未就绪')
     return await router.handle(req)
   } catch (err) {

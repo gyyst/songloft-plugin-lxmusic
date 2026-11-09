@@ -15,10 +15,11 @@
     "songs.write",
     "playlists.read",
     "playlists.write",
+    "inter-plugin",
     "jsenv"
   ],
   "updateUrl": "https://raw.githubusercontent.com/gyyst/songloft-plugin-lxmusic/main/plugin.json",
   "download_url": "https://github.com/gyyst/songloft-plugin-lxmusic/releases/download/v2026.11.9/lxmusic.jsplugin.zip",
-  "entryHash": "3b198855010ef5ab6c05927b50c6946f956653dc7bfbdce07f1771b65bb2c42d",
-  "zipHash": "1a216006b06fb1b91ce3306bb8dea57588cc4b8425ba80230994540feb94c45f"
+  "entryHash": "efdd3fe64d72a16c4d083e06a04d022d622645816672d67080bb24d22b83d2a9",
+  "zipHash": "887e550cece9cc4c3e0bd42e328640ea4c2db0f09777271b8a9b0be406498072"
 }
