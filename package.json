@@ -1,6 +1,6 @@
 {
   "name": "songloft-plugin-lxmusic",
-  "version": "0.1.0",
+  "version": "2026.11.9",
   "description": "洛雪音源插件：多平台搜索/歌单/排行榜 + 洛雪自定义音源播放链接解析",
   "private": true,
   "scripts": {
