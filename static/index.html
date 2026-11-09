@@ -2,179 +2,527 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
   <title>洛雪音源</title>
+  <link rel="icon" type="image/svg+xml" href="static/icon.svg">
   <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
     <symbol id="i-search" viewBox="0 0 24 24"><path d="M9.5 3a6.5 6.5 0 0 1 5.18 10.43l5.45 5.44-1.42 1.42-5.44-5.45A6.5 6.5 0 1 1 9.5 3Zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></symbol>
-    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3 7 8h3v7h4V8h3l-5-5Zm-7 15h14v2H5v-2Z"/></symbol>
-    <symbol id="i-extension" viewBox="0 0 24 24"><path d="M8 3h8v3.2a2.8 2.8 0 1 0 0 5.6V15h-3.2a2.8 2.8 0 1 1-5.6 0H4V7h4V3Zm2 2H6v6h3.2v1.4a.8.8 0 0 0 1.6 0V11H14V6h-4V5Z"/></symbol>
+    <symbol id="i-playlist" viewBox="0 0 24 24"><path d="M4 6h12v2H4V6Zm0 4h12v2H4v-2Zm0 4h8v2H4v-2Zm10 .5 6 3.5-6 3.5v-7Z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10h4v10H4Zm6 0V4h4v16h-4Zm6 0v-7h4v7h-4Z"/></symbol>
+    <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 4h4v16H4V4Zm6 0h4v16h-4V4Zm6 0h4v16h-4V4Z"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.37-.31-.6-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.48 0-.6.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.37.31.6.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.48 0 .6-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3 7 8h3v7h4V8h3l-5-5Zm-7 15h14v2H5v-2Z"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 0 1 1.4 1.4l-1.4 1.4a1 1 0 0 1-1.4 0ZM7.8 16.2a4 4 0 0 1 0-5.7l2.5-2.5 1.4 1.4-2.5 2.5a2 2 0 0 0 2.8 2.8l2.5-2.5 1.4 1.4-2.5 2.5a4 4 0 0 1-5.6.1Zm8.4-8.4a4 4 0 0 1 0 5.7l-2.5 2.5-1.4-1.4 2.5-2.5a2 2 0 0 0-2.8-2.8l-2.5 2.5-1.4-1.4 2.5-2.5a4 4 0 0 1 5.6-.1Z"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 3h9a2 2 0 0 1 2 2v11h-2V5H8V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H5Z"/></symbol>
     <symbol id="i-delete" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm3 2v8h2v-8H9Zm4 0v8h2v-8h-2Z"/></symbol>
     <symbol id="i-add" viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></symbol>
     <symbol id="i-music" viewBox="0 0 24 24"><path d="M10 4v12.3A3.5 3.5 0 1 1 8 13V6l10-2v10.3a3.5 3.5 0 1 1-2-3.2V6.4L10 7.8V4Z"/></symbol>
-    <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 4h4v16H4V4Zm6 0h4v16h-4V4Zm6 0h4v16h-4V4Z"/></symbol>
-    <symbol id="i-playlist" viewBox="0 0 24 24"><path d="M4 6h12v2H4V6Zm0 4h12v2H4v-2Zm0 4h8v2H4v-2Zm10 .5 6 3.5-6 3.5v-7Z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5Z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6V5Zm8 0h4v14h-4V5Z"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 6h2v12H6V6Zm12 0v12l-9-6 9-6Z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M16 6h2v12h-2V6ZM6 6l9 6-9 6V6Z"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7Zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4Z"/></symbol>
+    <symbol id="i-repeat-one" viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7Zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4Z"/><path d="M11.2 10h1.6v4h-1.6v-2.5l-.9.5-.6-1.1 1.5-.9Z"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41ZM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5Zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13Z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h10v2H4v-2Z"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3V9Zm12.5-1.5a6 6 0 0 1 0 9l-1.4-1.4a4 4 0 0 0 0-6.2l1.4-1.4Z"/></symbol>
+    <symbol id="i-volume-mute" viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3V9Zm12.6 1.1 1.4-1.4 2 2 2-2 1.4 1.4-2 2 2 2-1.4 1.4-2-2-2 2-1.4-1.4 2-2-2-2Z"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5H7Z"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m14 7-5 5 5 5V7Z"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5V7Z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M6 10a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm6 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm6 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M11 3h2v9l3-3 1.4 1.4L12 15.8 6.6 10.4 8 9l3 3V3ZM5 19h14v2H5v-2Z"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14V3ZM5 5h6v2H7v10h10v-4h2v6H5V5Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m9 16.2-3.5-3.5-1.4 1.4L9 19 20.3 7.7l-1.4-1.4L9 16.2Z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0-5h1v3h-2V2h1Zm0 17h1v3h-2v-3h1ZM2 11h3v2H2v-2Zm17 0h3v2h-3v-2ZM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4-2.1-2.1Zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4-2.1-2.1Zm2.1-13.5 1.4 1.4-2.1 2.1-1.4-1.4 2.1-2.1ZM5.6 19.8l-1.4-1.4 2.1-2.1 1.4 1.4-2.1 2.1Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12.7 3a8.5 8.5 0 1 0 8.3 10.6A7 7 0 0 1 12.7 3Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm-1 3h2v6l4 2-1 1.7-5-2.7V7Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5c0-3-4-5.5-9-5.5Z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 5h7l2 2h9v12H3V5Z"/></symbol>
+    <symbol id="i-disc" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21 3.6 12.6A5.5 5.5 0 0 1 12 5.1a5.5 5.5 0 0 1 8.4 7.5L12 21Z"/></symbol>
+    <symbol id="i-cast" viewBox="0 0 24 24"><path d="M2 5h20v14h-8v-2h6V7H4v3H2V5Zm0 6a9 9 0 0 1 9 9h-2a7 7 0 0 0-7-7v-2Zm0 4a5 5 0 0 1 5 5H2v-5Zm0 4h2v2H2v-2Z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v2h-2V7Zm0 4h2v6h-2v-6Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="m13 5 7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></symbol>
   </svg>
 
-  <header class="app-bar">
-    <div class="app-bar-inner">
-      <div class="brand">
-        <span class="brand-mark"><svg class="icon"><use href="#i-music"></use></svg></span>
+  <div class="app">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <img class="brand-logo" src="static/icon.svg" alt="">
         <div class="brand-text">
-          <h1>洛雪音源</h1>
-          <p>多平台搜索 · 歌单榜单 · 自定义音源播放链接</p>
+          <strong>洛雪音源</strong>
+          <span>LX MUSIC</span>
         </div>
       </div>
-      <button id="refresh-meta" class="icon-btn" type="button" title="刷新">
-        <svg class="icon"><use href="#i-refresh"></use></svg>
-      </button>
-    </div>
-    <nav class="tabs" role="tablist" aria-label="功能">
-      <button class="tab" type="button" role="tab" data-tab="search" aria-selected="true">
-        <svg class="icon"><use href="#i-search"></use></svg><span>搜索</span>
-      </button>
-      <button class="tab" type="button" role="tab" data-tab="import" aria-selected="false">
-        <svg class="icon"><use href="#i-upload"></use></svg><span>导入</span>
-      </button>
-      <button class="tab" type="button" role="tab" data-tab="sources" aria-selected="false">
-        <svg class="icon"><use href="#i-extension"></use></svg><span>音源管理</span>
-      </button>
-    </nav>
-  </header>
-
-  <main class="page">
-    <!-- 搜索 -->
-    <section id="tab-search" class="tab-panel" role="tabpanel" aria-label="搜索">
-      <div class="card search-card">
-        <div class="search-row">
-          <div class="field grow">
-            <svg class="icon field-icon"><use href="#i-search"></use></svg>
-            <input id="search-input" type="search" placeholder="搜索歌曲、歌手、专辑" autocomplete="off" enterkeyhint="search">
-          </div>
-          <div class="field select-field">
-            <select id="platform-select" aria-label="平台">
-              <option value="">全部平台</option>
-            </select>
-          </div>
-          <div class="field select-field">
-            <select id="quality-select" aria-label="音质"></select>
-          </div>
-          <button id="search-btn" class="btn filled" type="button">搜索</button>
-        </div>
-        <p class="hint">搜索聚合酷我、酷狗、QQ、网易云、咪咕公开接口；播放链接由已导入的洛雪音源脚本解析。</p>
-      </div>
-
-      <div id="search-toolbar" class="card toolbar hidden">
-        <label class="checkbox">
-          <input id="select-all" type="checkbox">
-          <span>全选</span>
-        </label>
-        <span id="selection-info" class="selection-info">已选 0 首</span>
-        <div class="field grow toolbar-playlist">
-          <svg class="icon field-icon"><use href="#i-playlist"></use></svg>
-          <input id="playlist-name" type="text" placeholder="导入到歌单（可选，不存在会自动创建）">
-        </div>
-        <button id="import-selected" class="btn tonal" type="button" disabled>
-          <svg class="icon"><use href="#i-add"></use></svg>导入选中
+      <nav class="sidebar-nav" aria-label="主导航">
+        <button class="nav-item active" type="button" data-route="search">
+          <svg class="icon"><use href="#i-search"></use></svg><span>搜索</span>
+        </button>
+        <button class="nav-item" type="button" data-route="songlist">
+          <svg class="icon"><use href="#i-playlist"></use></svg><span>歌单</span>
+        </button>
+        <button class="nav-item" type="button" data-route="leaderboard">
+          <svg class="icon"><use href="#i-chart"></use></svg><span>排行榜</span>
+        </button>
+        <button class="nav-item" type="button" data-route="local">
+          <svg class="icon"><use href="#i-library"></use></svg><span>本地音乐</span>
+        </button>
+        <button class="nav-item" type="button" data-route="settings">
+          <svg class="icon"><use href="#i-settings"></use></svg><span>设置</span>
+        </button>
+      </nav>
+      <div class="sidebar-foot">
+        <div id="sidebar-status" class="sidebar-status">音源未加载</div>
+        <button id="theme-toggle" class="icon-btn" type="button" title="切换主题">
+          <svg class="icon"><use href="#i-moon"></use></svg>
         </button>
       </div>
+    </aside>
 
-      <div id="search-status" class="status-line" role="status"></div>
-      <ul id="search-results" class="song-list" aria-live="polite"></ul>
-      <div class="center">
-        <button id="load-more" class="btn text hidden" type="button">加载更多</button>
-      </div>
-    </section>
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebar-toggle" class="icon-btn topbar-menu" type="button" title="展开菜单">
+            <svg class="icon"><use href="#i-menu"></use></svg>
+          </button>
+          <h1 id="page-title">搜索</h1>
+        </div>
+        <div class="topbar-actions">
+          <span id="topbar-status" class="topbar-status"></span>
+          <button id="page-refresh" class="icon-btn" type="button" title="刷新">
+            <svg class="icon"><use href="#i-refresh"></use></svg>
+          </button>
+        </div>
+      </header>
 
-    <!-- 导入 -->
-    <section id="tab-import" class="tab-panel" role="tabpanel" aria-label="导入" hidden>
-      <div class="card">
-        <div class="card-head">
-          <h2><svg class="icon"><use href="#i-extension"></use></svg>导入洛雪音源脚本</h2>
-          <p class="hint">支持单个或多个 <code>.js</code> 脚本，也支持包含脚本的 <code>.zip</code>。批量导入会在后台逐个加载，请耐心等待。</p>
+      <main class="page" id="page">
+        <!-- ========== 搜索 ========== -->
+        <section class="page-section" id="page-search" data-page="search">
+          <div class="toolbar">
+            <label class="select-wrap compact">
+              <select id="search-type" aria-label="搜索类型">
+                <option value="song">歌曲</option>
+                <option value="playlist">歌单</option>
+              </select>
+              <svg class="icon select-arrow"><use href="#i-chevron-down"></use></svg>
+            </label>
+            <label class="select-wrap">
+              <select id="search-platform" aria-label="平台"></select>
+              <svg class="icon select-arrow"><use href="#i-chevron-down"></use></svg>
+            </label>
+            <div class="search-field">
+              <svg class="icon field-icon"><use href="#i-search"></use></svg>
+              <input id="search-input" type="search" placeholder="搜索歌曲、歌手、专辑" autocomplete="off" enterkeyhint="search">
+              <button id="search-btn" class="search-submit" type="button" title="搜索">
+                <svg class="icon"><use href="#i-search"></use></svg>
+              </button>
+            </div>
+            <label class="select-wrap">
+              <select id="search-quality" aria-label="音质"></select>
+              <svg class="icon select-arrow"><use href="#i-chevron-down"></use></svg>
+            </label>
+          </div>
+
+          <section class="card hot-card">
+            <div class="card-head">
+              <h2 class="card-title"><span class="flame">🔥</span> 热门搜索 <span id="hot-platform" class="tag tag-wy"></span></h2>
+              <button id="hot-refresh" class="btn ghost sm" type="button">
+                <svg class="icon"><use href="#i-refresh"></use></svg>刷新热搜
+              </button>
+            </div>
+            <div id="hot-list" class="hot-list">
+              <span class="muted">正在加载热搜…</span>
+            </div>
+          </section>
+
+          <section class="card list-card">
+            <div class="list-toolbar">
+              <label class="checkbox">
+                <input id="select-all" type="checkbox">
+                <span>全选</span>
+              </label>
+              <span id="selection-info" class="muted">已选 0 首</span>
+              <div class="spacer"></div>
+              <input id="playlist-name" class="text-input compact" type="text" placeholder="导入到歌单（可选）">
+              <button id="import-selected" class="btn primary sm" type="button" disabled>
+                <svg class="icon"><use href="#i-add"></use></svg>导入选中
+              </button>
+            </div>
+            <div id="search-status" class="list-status" role="status"></div>
+            <div class="song-table" data-layout="search">
+              <div class="song-head">
+                <span></span><span>#</span><span></span><span>歌曲</span>
+                <span class="col-album">专辑</span><span class="col-platform">平台</span>
+                <span class="col-duration">时长</span><span class="col-actions">操作</span>
+              </div>
+              <ul id="search-results" class="song-list" aria-live="polite"></ul>
+            </div>
+            <div class="list-more">
+              <button id="load-more" class="btn ghost hidden" type="button">加载更多</button>
+            </div>
+          </section>
+        </section>
+
+        <!-- ========== 歌单 ========== -->
+        <section class="page-section" id="page-songlist" data-page="songlist" hidden>
+          <div id="songlist-browse">
+            <div class="toolbar">
+              <label class="select-wrap">
+                <select id="songlist-platform" aria-label="平台"></select>
+                <svg class="icon select-arrow"><use href="#i-chevron-down"></use></svg>
+              </label>
+              <label class="select-wrap">
+                <select id="songlist-sort" aria-label="排序"></select>
+                <svg class="icon select-arrow"><use href="#i-chevron-down"></use></svg>
+              </label>
+              <div class="search-field">
+                <svg class="icon field-icon"><use href="#i-search"></use></svg>
+                <input id="songlist-search" type="search" placeholder="搜索歌单..." autocomplete="off">
+                <button id="songlist-search-btn" class="search-submit" type="button" title="搜索歌单">
+                  <svg class="icon"><use href="#i-search"></use></svg>
+                </button>
+              </div>
+            </div>
+            <div id="songlist-tags" class="hot-list tag-list"></div>
+            <div id="songlist-status" class="list-status" role="status"></div>
+            <div id="songlist-grid" class="playlist-grid"></div>
+            <div class="pager">
+              <button id="songlist-prev" class="btn ghost sm" type="button">上一页</button>
+              <span id="songlist-page" class="muted">第 1 页</span>
+              <button id="songlist-next" class="btn ghost sm" type="button">下一页</button>
+            </div>
+          </div>
+
+          <div id="songlist-detail" class="hidden">
+            <button id="songlist-back" class="back-btn" type="button">
+              <svg class="icon"><use href="#i-chevron-left"></use></svg>返回歌单
+            </button>
+            <div class="detail-hero">
+              <div class="detail-cover" id="songlist-detail-cover"></div>
+              <div class="detail-info">
+                <h2 id="songlist-detail-name">歌单</h2>
+                <p id="songlist-detail-meta" class="muted"></p>
+                <p id="songlist-detail-desc" class="muted detail-desc"></p>
+                <div class="detail-actions">
+                  <button id="songlist-play-all" class="btn primary" type="button">
+                    <svg class="icon"><use href="#i-play"></use></svg>播放全部
+                  </button>
+                  <button id="songlist-import-all" class="btn tonal" type="button">
+                    <svg class="icon"><use href="#i-add"></use></svg>导入全部
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="songlist-detail-status" class="list-status" role="status"></div>
+            <div class="card song-table" data-layout="plain">
+              <div class="song-head">
+                <span></span><span>#</span><span></span><span>歌曲</span>
+                <span class="col-album">专辑</span><span class="col-platform">平台</span>
+                <span class="col-duration">时长</span><span class="col-actions">操作</span>
+              </div>
+              <ul id="songlist-detail-songs" class="song-list"></ul>
+              <div class="list-more">
+                <button id="songlist-detail-more" class="btn ghost hidden" type="button">加载更多</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 排行榜 ========== -->
+        <section class="page-section" id="page-leaderboard" data-page="leaderboard" hidden>
+          <div class="toolbar">
+            <label class="select-wrap">
+              <select id="leaderboard-platform" aria-label="平台"></select>
+              <svg class="icon select-arrow"><use href="#i-chevron-down"></use></svg>
+            </label>
+            <div class="spacer"></div>
+            <button id="leaderboard-play-all" class="btn primary" type="button">
+              <svg class="icon"><use href="#i-play"></use></svg>播放全部
+            </button>
+          </div>
+          <div class="board-layout">
+            <aside class="card board-side">
+              <div class="board-side-head">
+                <h2>榜单列表</h2>
+                <button id="leaderboard-refresh" class="icon-btn" type="button" title="刷新榜单">
+                  <svg class="icon"><use href="#i-refresh"></use></svg>
+                </button>
+              </div>
+              <ul id="board-list" class="board-list"></ul>
+            </aside>
+            <section class="card board-main">
+              <div class="board-main-head">
+                <h2 id="board-title">榜单</h2>
+                <span id="board-meta" class="muted"></span>
+              </div>
+              <div id="board-status" class="list-status" role="status"></div>
+              <div class="song-table" data-layout="plain">
+                <div class="song-head">
+                  <span></span><span>#</span><span></span><span>歌曲</span>
+                  <span class="col-album">专辑</span><span class="col-platform">平台</span>
+                  <span class="col-duration">时长</span><span class="col-actions">操作</span>
+                </div>
+                <ul id="board-songs" class="song-list"></ul>
+              </div>
+              <div class="list-more">
+                <button id="board-more" class="btn ghost hidden" type="button">加载更多</button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ========== 本地音乐 ========== -->
+        <section class="page-section" id="page-local" data-page="local" hidden>
+          <div class="view-tabs">
+            <button class="view-tab active" type="button" data-local-view="songs">歌曲库</button>
+            <button class="view-tab" type="button" data-local-view="playlists">歌单库</button>
+            <div class="spacer"></div>
+            <div class="search-field compact">
+              <svg class="icon field-icon"><use href="#i-search"></use></svg>
+              <input id="local-search" type="search" placeholder="筛选歌曲 / 歌单" autocomplete="off">
+            </div>
+            <button id="local-refresh" class="icon-btn" type="button" title="刷新">
+              <svg class="icon"><use href="#i-refresh"></use></svg>
+            </button>
+          </div>
+
+          <div id="local-songs-view">
+            <div id="local-status" class="list-status" role="status"></div>
+            <div class="card song-table" data-layout="plain">
+              <div class="song-head">
+                <span></span><span>#</span><span></span><span>歌曲</span>
+                <span class="col-album">专辑</span><span class="col-platform">来源</span>
+                <span class="col-duration">时长</span><span class="col-actions">操作</span>
+              </div>
+              <ul id="local-songs" class="song-list"></ul>
+            </div>
+            <div class="list-more">
+              <button id="local-more" class="btn ghost hidden" type="button">加载更多</button>
+            </div>
+          </div>
+
+          <div id="local-playlists-view" class="hidden">
+            <div id="local-playlist-status" class="list-status" role="status"></div>
+            <div id="local-playlists" class="playlist-grid"></div>
+          </div>
+
+          <div id="local-playlist-detail" class="hidden">
+            <button id="local-playlist-back" class="back-btn" type="button">
+              <svg class="icon"><use href="#i-chevron-left"></use></svg>返回歌单库
+            </button>
+            <div class="detail-hero slim">
+              <div class="detail-cover small" id="local-playlist-cover"></div>
+              <div class="detail-info">
+                <h2 id="local-playlist-name">歌单</h2>
+                <p id="local-playlist-meta" class="muted"></p>
+              </div>
+              <button id="local-playlist-play" class="btn primary" type="button">
+                <svg class="icon"><use href="#i-play"></use></svg>播放全部
+              </button>
+            </div>
+            <div class="card song-table" data-layout="plain">
+              <div class="song-head">
+                <span></span><span>#</span><span></span><span>歌曲</span>
+                <span class="col-album">专辑</span><span class="col-platform">来源</span>
+                <span class="col-duration">时长</span><span class="col-actions">操作</span>
+              </div>
+              <ul id="local-playlist-songs" class="song-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 设置 ========== -->
+        <section class="page-section" id="page-settings" data-page="settings" hidden>
+          <div class="settings-grid">
+            <section class="card settings-card span-2">
+              <div class="card-head">
+                <h2 class="card-title">自定义音源</h2>
+                <button id="sources-refresh" class="btn ghost sm" type="button">
+                  <svg class="icon"><use href="#i-refresh"></use></svg>刷新
+                </button>
+              </div>
+              <p id="sources-summary" class="muted">正在读取音源列表…</p>
+              <div id="batch-banner" class="banner hidden" role="status"></div>
+              <ul id="source-list" class="source-list" aria-live="polite"></ul>
+
+              <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="选择或拖入音源脚本">
+                <svg class="icon drop-icon"><use href="#i-upload"></use></svg>
+                <p><strong>点击选择文件</strong> 或将文件拖到这里</p>
+                <p class="muted">仅支持 .js / .zip，单文件最大 8MB</p>
+                <input id="source-file-input" type="file" accept=".js,.zip,application/javascript,application/zip" multiple hidden>
+              </div>
+              <ul id="import-file-list" class="file-list"></ul>
+              <div class="settings-actions">
+                <label class="checkbox">
+                  <input id="import-enable" type="checkbox" checked>
+                  <span>导入后立即启用</span>
+                </label>
+                <button id="import-files-btn" class="btn primary sm" type="button" disabled>
+                  <svg class="icon"><use href="#i-upload"></use></svg>导入文件
+                </button>
+              </div>
+              <div class="url-import">
+                <div class="search-field">
+                  <svg class="icon field-icon"><use href="#i-link"></use></svg>
+                  <input id="source-url-input" type="url" placeholder="https://example.com/source.js" autocomplete="off">
+                  <button id="import-url-btn" class="search-submit wide" type="button">导入</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="card settings-card">
+              <h2 class="card-title">播放与搜索</h2>
+              <label class="setting-row">
+                <span>默认音质</span>
+                <select id="default-quality" class="text-input compact"></select>
+              </label>
+              <label class="setting-row">
+                <span>打开页面时加载热搜</span>
+                <input id="setting-hot" type="checkbox" checked>
+              </label>
+              <p class="muted setting-hint">音质会影响搜索请求与音源解析优先级；实际可用音质由音源脚本决定。</p>
+            </section>
+
+            <section class="card settings-card">
+              <h2 class="card-title">批量导入歌曲</h2>
+              <textarea id="songs-json" rows="7" spellcheck="false" placeholder='[{"title":"歌曲名","artist":"歌手","source_data":{"platform":"kw","quality":"320k","songInfo":{...}}}]'></textarea>
+              <div class="settings-actions">
+                <input id="import-playlist-name" class="text-input compact grow" type="text" placeholder="导入到歌单（可选）">
+                <button id="import-json-btn" class="btn primary sm" type="button">
+                  <svg class="icon"><use href="#i-add"></use></svg>导入到曲库
+                </button>
+              </div>
+            </section>
+
+            <section class="card settings-card span-2 update-card" id="update-card">
+              <div class="card-head">
+                <h2 class="card-title">插件更新</h2>
+                <div class="update-versions">
+                  <span id="update-current" class="chip">v—</span>
+                  <span id="update-latest" class="chip ok hidden"></span>
+                </div>
+              </div>
+              <div class="update-row">
+                <div class="update-copy">
+                  <strong>Songloft 自动更新</strong>
+                  <p id="update-auto-hint" class="muted setting-hint">开启后由 Songloft 后台定时检查并安装新版本，更新完成后自动热重载。该开关为全站插件设置。</p>
+                </div>
+                <label class="switch update-switch" title="开启后 Songloft 会定时检查所有带更新源的插件">
+                  <input id="update-auto-toggle" type="checkbox" disabled>
+                  <span id="update-auto-text">读取中…</span>
+                </label>
+              </div>
+              <div class="update-actions">
+                <button id="update-check-btn" class="btn ghost sm" type="button" disabled>
+                  <svg class="icon"><use href="#i-refresh"></use></svg><span id="update-check-text">检查更新</span>
+                </button>
+                <button id="update-apply-btn" class="btn primary sm hidden" type="button">
+                  <svg class="icon"><use href="#i-download"></use></svg><span id="update-apply-text">立即更新</span>
+                </button>
+                <span id="update-status" class="update-status" role="status"></span>
+              </div>
+            </section>
+
+            <section class="card settings-card span-2 about-card">
+              <div class="about-head">
+                <img class="about-logo" src="static/icon.svg" alt="">
+                <div>
+                  <h2>洛雪音源</h2>
+                  <p class="muted">多平台搜索 · 歌单榜单 · 自定义音源播放链接</p>
+                </div>
+              </div>
+              <p class="muted">本插件不附带任何音源脚本。内置搜索仅访问各平台公开接口，播放链接由已导入的洛雪音源脚本解析。仅供个人学习研究，禁止商用。</p>
+              <p class="muted">歌曲与音源数据版权归第三方所有，请自行清除产生的版权数据。</p>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ========== 底部播放器 ========== -->
+  <div id="player" class="player">
+    <div class="player-cover" id="player-cover">
+      <svg class="icon"><use href="#i-music"></use></svg>
+    </div>
+    <div class="player-main">
+      <div class="player-line">
+        <div class="player-meta">
+          <button id="player-title" class="player-title" type="button">洛雪音乐</button>
+          <span id="player-artist" class="player-artist">听你想听</span>
         </div>
-        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="选择或拖入音源脚本">
-          <svg class="icon drop-icon"><use href="#i-upload"></use></svg>
-          <p><strong>点击选择文件</strong> 或将文件拖到这里</p>
-          <p class="hint">仅支持 .js / .zip，单文件最大 8MB</p>
-          <input id="source-file-input" type="file" accept=".js,.zip,application/javascript,application/zip" multiple hidden>
+        <div class="player-controls">
+          <button id="player-prev" class="player-btn" type="button" title="上一首">
+            <svg class="icon"><use href="#i-prev"></use></svg>
+          </button>
+          <button id="player-toggle" class="player-play" type="button" title="播放">
+            <svg class="icon"><use href="#i-play"></use></svg>
+          </button>
+          <button id="player-next" class="player-btn" type="button" title="下一首">
+            <svg class="icon"><use href="#i-next"></use></svg>
+          </button>
         </div>
-        <ul id="import-file-list" class="file-list"></ul>
-        <div class="card-actions">
-          <label class="checkbox">
-            <input id="import-enable" type="checkbox" checked>
-            <span>导入后立即启用</span>
-          </label>
-          <button id="import-files-btn" class="btn filled" type="button" disabled>
-            <svg class="icon"><use href="#i-upload"></use></svg>导入文件
+        <div class="player-side">
+          <button id="player-mode" class="player-btn" type="button" title="列表循环">
+            <svg class="icon"><use href="#i-repeat"></use></svg>
+          </button>
+          <button id="player-queue-btn" class="player-btn" type="button" title="播放列表">
+            <svg class="icon"><use href="#i-list"></use></svg>
+          </button>
+          <button id="player-volume" class="player-btn" type="button" title="音量">
+            <svg class="icon"><use href="#i-volume"></use></svg>
+          </button>
+          <button id="player-collapse" class="player-btn" type="button" title="收起播放器">
+            <svg class="icon"><use href="#i-chevron-down"></use></svg>
           </button>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h2><svg class="icon"><use href="#i-link"></use></svg>从 URL 导入音源</h2>
-          <p class="hint">填写音源脚本或 ZIP 的直链地址。</p>
+      <div class="player-progress">
+        <span id="player-current" class="player-time">00:00</span>
+        <div id="player-track" class="player-track" role="slider" aria-label="播放进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div id="player-fill" class="player-fill"></div>
+          <div id="player-thumb" class="player-thumb"></div>
         </div>
-        <div class="search-row">
-          <div class="field grow">
-            <svg class="icon field-icon"><use href="#i-link"></use></svg>
-            <input id="source-url-input" type="url" placeholder="https://example.com/source.js" autocomplete="off">
-          </div>
-          <button id="import-url-btn" class="btn tonal" type="button">导入</button>
-        </div>
+        <span id="player-duration" class="player-time">00:00</span>
       </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h2><svg class="icon"><use href="#i-library"></use></svg>批量导入歌曲到曲库</h2>
-          <p class="hint">粘贴搜索结果或自定义 JSON 数组，每项至少包含 <code>title</code> 与 <code>source_data</code>（含 <code>platform</code>、<code>songInfo</code>）。</p>
-        </div>
-        <div class="field textarea-field">
-          <textarea id="songs-json" rows="10" spellcheck="false" placeholder='[{"title":"歌曲名","artist":"歌手","source_data":{"platform":"kw","quality":"320k","songInfo":{...}}}]'></textarea>
-        </div>
-        <div class="card-actions">
-          <div class="field grow">
-            <svg class="icon field-icon"><use href="#i-playlist"></use></svg>
-            <input id="import-playlist-name" type="text" placeholder="导入到歌单（可选）">
-          </div>
-          <button id="import-json-btn" class="btn filled" type="button">
-            <svg class="icon"><use href="#i-add"></use></svg>导入到曲库
-          </button>
-        </div>
+      <div id="volume-pop" class="volume-pop hidden">
+        <svg class="icon"><use href="#i-volume"></use></svg>
+        <input id="volume-range" type="range" min="0" max="1" step="0.01" value="0.8">
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- 音源管理 -->
-    <section id="tab-sources" class="tab-panel" role="tabpanel" aria-label="音源管理" hidden>
-      <div class="card">
-        <div class="card-head row-between">
-          <div>
-            <h2><svg class="icon"><use href="#i-extension"></use></svg>已导入音源</h2>
-            <p class="hint" id="sources-summary">尚未读取音源列表</p>
-          </div>
-          <button id="refresh-sources" class="btn text" type="button">
-            <svg class="icon"><use href="#i-refresh"></use></svg>刷新
-          </button>
-        </div>
-        <div id="batch-banner" class="banner hidden" role="status"></div>
-        <ul id="source-list" class="source-list" aria-live="polite"></ul>
+  <aside id="queue-drawer" class="queue-drawer hidden" aria-label="播放列表">
+    <div class="queue-head">
+      <h2>当前播放 (<span id="queue-total">0</span>)</h2>
+      <div class="queue-head-actions">
+        <button id="queue-clear" class="btn ghost sm" type="button">清空</button>
+        <button id="queue-close" class="icon-btn" type="button" title="关闭">
+          <svg class="icon"><use href="#i-close"></use></svg>
+        </button>
       </div>
-    </section>
+    </div>
+    <ul id="queue-list" class="queue-list"></ul>
+    <div id="queue-empty" class="empty-state small">
+      <svg class="icon"><use href="#i-playlist"></use></svg>
+      <p>播放列表空空的</p>
+    </div>
+  </aside>
 
-    <footer class="footnote">
-      <p>本插件不附带任何音源脚本。内置搜索仅访问各平台公开接口。</p>
-      <p>仅供个人学习研究，禁止商用。音源脚本与数据版权归第三方所有，请自行清除产生的版权数据。</p>
-    </footer>
-  </main>
+  <audio id="audio" preload="none"></audio>
 
+  <!-- ========== 播放链接弹窗 ========== -->
   <dialog id="url-dialog" class="dialog">
     <div class="dialog-head">
       <h2>播放链接</h2>
@@ -182,21 +530,33 @@
         <svg class="icon"><use href="#i-close"></use></svg>
       </button>
     </div>
-    <p id="url-meta" class="hint"></p>
+    <p id="url-meta" class="muted"></p>
     <textarea id="url-text" class="url-text" readonly rows="4" spellcheck="false"></textarea>
     <details id="url-headers-box" class="headers-box">
       <summary>请求头</summary>
       <pre id="url-headers"></pre>
     </details>
     <div class="dialog-actions">
-      <button id="url-open" class="btn text" type="button">在新标签页打开</button>
-      <button id="url-copy" class="btn filled" type="button">
+      <button id="url-open" class="btn ghost" type="button">在新标签页打开</button>
+      <button id="url-copy" class="btn primary" type="button">
         <svg class="icon"><use href="#i-copy"></use></svg>复制链接
       </button>
     </div>
   </dialog>
 
-  <div id="toast" class="snackbar" role="status" aria-live="polite"></div>
+  <!-- ========== 确认弹窗 ========== -->
+  <dialog id="confirm-dialog" class="dialog confirm-dialog">
+    <div class="dialog-head">
+      <h2 id="confirm-title">确认操作</h2>
+    </div>
+    <p id="confirm-message" class="muted"></p>
+    <div class="dialog-actions">
+      <button id="confirm-cancel" class="btn ghost" type="button">取消</button>
+      <button id="confirm-ok" class="btn danger" type="button">确定</button>
+    </div>
+  </dialog>
+
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 
   <script src="static/js/app.js"></script>
 </body>

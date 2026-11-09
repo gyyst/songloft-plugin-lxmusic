@@ -17,6 +17,8 @@
 | 音源管理 | 脚本导入（文件 / 批量 ZIP / URL）、启停、删除、加载状态与调用统计；批量导入后台排队逐个加载，避免占满沙箱。 |
 | 歌单 | 各平台歌单标签、排序、列表、详情与歌单搜索。 |
 | 排行榜 | 各平台榜单列表与榜单歌曲。 |
+| 本地音乐 | 浏览宿主机库歌曲与歌单，支持关键词筛选并直接播放。 |
+| 插件更新 | 设置页查看当前版本、检查并一键安装新版本；可开启 Songloft 后台自动更新（全站开关）。 |
 | 导入曲库 | 批量写入宿主机库（去重键优先 `songmid → musicId → hash → copyrightId`），可自动附带歌词并加入指定歌单。 |
 | 语音点歌 | 自动注册为 [mi-song-gpt](https://github.com/wyrt000/mi-song-gpt) 的外部搜索源，小米音箱说「播放 XX」即可经洛雪音源解析并推流。 |
 
@@ -48,7 +50,17 @@
 | `GET` | `/api/direct/lyric` | 歌词；默认返回宿主 LyricFetcher 需要的 `{code:0,data:{lyric,tlyric}}`，`format=text` 返回纯 LRC。 |
 | `POST` | `/api/search/topone` | 搜索并返回最佳匹配（三合一）；同时是 mi-song-gpt 的外部搜索源契约，返回含 `plugin_entry_path`、`dedup_key`、歌词 URL 的可入库结构。 |
 
-插件自带静态页面 `/api/v1/jsplugin/lxmusic/`，包含搜索、导入、音源管理三个标签页。
+插件自带静态页面 `/api/v1/jsplugin/lxmusic/`：左侧导航包含搜索、歌单、排行榜、本地音乐与设置五个页面，底部为悬浮播放条（支持队列、播放模式、进度拖动、音量与折叠），设置页集中管理音源脚本导入、启停、删除、默认音质与插件更新。
+
+## 插件更新
+
+`plugin.json` 通过 `updateUrl` 指向仓库根目录的最新清单，`download_url` 指向对应 Release 的 `lxmusic.jsplugin.zip`。设置页「插件更新」提供：
+
+- **检查更新**：读取 Songloft 的已安装插件列表与远程清单，显示当前版本与最新版本；
+- **立即更新**：调用宿主更新接口下载并安装新版本，随后自动热重载并刷新页面；
+- **Songloft 自动更新**：写入宿主全站开关 `plugin_auto_update`。开启后 Songloft 会在启动约 5 分钟后及之后每 6 小时检查一次所有带更新源的插件，自动下载安装并热重载；插件正忙时会推迟重载，等空闲后补做。
+
+检查与安装更新需要 Songloft 管理员权限；旧版宿主若没有对应接口，页面会提示「当前 Songloft 版本不支持该功能」。也可以继续在插件管理页手动上传 ZIP 覆盖更新。
 
 ## 与小米智能音箱配合（mi-song-gpt）
 
@@ -128,7 +140,7 @@ npm run dev         # 监听变更并上传到本地 Songloft（需按 CLI 提�
 
 1. `npm run build` 得到 `dist/lxmusic.jsplugin.zip`。
 2. 在 Songloft 管理后台的插件页面上传该 zip（或使用 `npm run publish`）。
-3. 打开插件页面，在「导入」标签页添加音源脚本；随后即可在 Songloft 中搜索与播放。
+3. 打开插件页面，在「设置」页添加音源脚本；随后即可在 Songloft 中搜索与播放。
 
 ## 发布
 

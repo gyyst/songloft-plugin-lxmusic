@@ -9,6 +9,7 @@ import { registerSearchRoutes } from './search'
 import { registerSourceRoutes } from './source'
 import { registerSongListRoutes } from './songlist'
 import { registerLeaderboardRoutes } from './leaderboard'
+import { registerHotRoutes } from './hot'
 
 export function createAppRouter(ctx: AppContext): Router {
   const router = createRouter()
@@ -27,6 +28,7 @@ export function createAppRouter(ctx: AppContext): Router {
   registerSourceRoutes(router, ctx)
   registerSongListRoutes(router, ctx)
   registerLeaderboardRoutes(router, ctx)
+  registerHotRoutes(router)
 
   return router
 }
