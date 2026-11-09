@@ -135,7 +135,7 @@ function buildDedupKey(platform: string, songInfo: any): string {
 }
 
 /**
- * 补齐语音助手（如 mi-song-gpt）消费 topone 结果所需的字段：
+ * 补齐语音助手（如 mi-song-harness）消费 topone 结果所需的字段：
  * - plugin_entry_path：告诉宿主播放时回调哪个插件解析 URL；
  * - dedup_key：入库去重；
  * - lyric/lyric_source：歌词 URL（宿主 LyricFetcher 格式）。
@@ -332,7 +332,7 @@ export function registerSearchRoutes(router: Router, ctx: AppContext): void {
     }
   })
 
-  // 三合一：搜索并选出最佳匹配。同时用作 mi-song-gpt 等语音助手的外部搜索源：
+  // 三合一：搜索并选出最佳匹配。同时用作 mi-song-harness 等语音助手的外部搜索源：
   // 请求 {keyword, hint?, quality}，返回可直接入库/回放的 topone 结构。
   router.post('/api/search/topone', async (req) => {
     try {
@@ -342,7 +342,7 @@ export function registerSearchRoutes(router: Router, ctx: AppContext): void {
       const platforms = resolvePlatforms(ctx, body.source_id, body.platforms)
       const quality = qualityOrDefault(body.quality)
       const pageSize = Math.min(Math.max(Number(body.page_size) || 10, 1), 30)
-      // mi-song-gpt 默认 6 秒超时：给单平台限时 4.5 秒，保证整体能按期返回。
+      // mi-song-harness 默认 6 秒超时：给单平台限时 4.5 秒，保证整体能按期返回。
       const items = await searchSongItems(platforms, keyword, 1, pageSize, quality, 4500)
       if (!items.length) return fail('没有找到匹配的歌曲', 404)
 
