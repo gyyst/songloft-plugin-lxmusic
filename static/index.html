@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>洛雪音源</title>
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-search" viewBox="0 0 24 24"><path d="M9.5 3a6.5 6.5 0 0 1 5.18 10.43l5.45 5.44-1.42 1.42-5.44-5.45A6.5 6.5 0 1 1 9.5 3Zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3 7 8h3v7h4V8h3l-5-5Zm-7 15h14v2H5v-2Z"/></symbol>
+    <symbol id="i-extension" viewBox="0 0 24 24"><path d="M8 3h8v3.2a2.8 2.8 0 1 0 0 5.6V15h-3.2a2.8 2.8 0 1 1-5.6 0H4V7h4V3Zm2 2H6v6h3.2v1.4a.8.8 0 0 0 1.6 0V11H14V6h-4V5Z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 0 1 1.4 1.4l-1.4 1.4a1 1 0 0 1-1.4 0ZM7.8 16.2a4 4 0 0 1 0-5.7l2.5-2.5 1.4 1.4-2.5 2.5a2 2 0 0 0 2.8 2.8l2.5-2.5 1.4 1.4-2.5 2.5a4 4 0 0 1-5.6.1Zm8.4-8.4a4 4 0 0 1 0 5.7l-2.5 2.5-1.4-1.4 2.5-2.5a2 2 0 0 0-2.8-2.8l-2.5 2.5-1.4-1.4 2.5-2.5a4 4 0 0 1 5.6-.1Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 3h9a2 2 0 0 1 2 2v11h-2V5H8V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H5Z"/></symbol>
+    <symbol id="i-delete" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm3 2v8h2v-8H9Zm4 0v8h2v-8h-2Z"/></symbol>
+    <symbol id="i-add" viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M10 4v12.3A3.5 3.5 0 1 1 8 13V6l10-2v10.3a3.5 3.5 0 1 1-2-3.2V6.4L10 7.8V4Z"/></symbol>
+    <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 4h4v16H4V4Zm6 0h4v16h-4V4Zm6 0h4v16h-4V4Z"/></symbol>
+    <symbol id="i-playlist" viewBox="0 0 24 24"><path d="M4 6h12v2H4V6Zm0 4h12v2H4v-2Zm0 4h8v2H4v-2Zm10 .5 6 3.5-6 3.5v-7Z"/></symbol>
+  </svg>
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <div class="brand">
+        <span class="brand-mark"><svg class="icon"><use href="#i-music"></use></svg></span>
+        <div class="brand-text">
+          <h1>洛雪音源</h1>
+          <p>多平台搜索 · 歌单榜单 · 自定义音源播放链接</p>
+        </div>
+      </div>
+      <button id="refresh-meta" class="icon-btn" type="button" title="刷新">
+        <svg class="icon"><use href="#i-refresh"></use></svg>
+      </button>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="功能">
+      <button class="tab" type="button" role="tab" data-tab="search" aria-selected="true">
+        <svg class="icon"><use href="#i-search"></use></svg><span>搜索</span>
+      </button>
+      <button class="tab" type="button" role="tab" data-tab="import" aria-selected="false">
+        <svg class="icon"><use href="#i-upload"></use></svg><span>导入</span>
+      </button>
+      <button class="tab" type="button" role="tab" data-tab="sources" aria-selected="false">
+        <svg class="icon"><use href="#i-extension"></use></svg><span>音源管理</span>
+      </button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <!-- 搜索 -->
+    <section id="tab-search" class="tab-panel" role="tabpanel" aria-label="搜索">
+      <div class="card search-card">
+        <div class="search-row">
+          <div class="field grow">
+            <svg class="icon field-icon"><use href="#i-search"></use></svg>
+            <input id="search-input" type="search" placeholder="搜索歌曲、歌手、专辑" autocomplete="off" enterkeyhint="search">
+          </div>
+          <div class="field select-field">
+            <select id="platform-select" aria-label="平台">
+              <option value="">全部平台</option>
+            </select>
+          </div>
+          <div class="field select-field">
+            <select id="quality-select" aria-label="音质"></select>
+          </div>
+          <button id="search-btn" class="btn filled" type="button">搜索</button>
+        </div>
+        <p class="hint">搜索聚合酷我、酷狗、QQ、网易云、咪咕公开接口；播放链接由已导入的洛雪音源脚本解析。</p>
+      </div>
+
+      <div id="search-toolbar" class="card toolbar hidden">
+        <label class="checkbox">
+          <input id="select-all" type="checkbox">
+          <span>全选</span>
+        </label>
+        <span id="selection-info" class="selection-info">已选 0 首</span>
+        <div class="field grow toolbar-playlist">
+          <svg class="icon field-icon"><use href="#i-playlist"></use></svg>
+          <input id="playlist-name" type="text" placeholder="导入到歌单（可选，不存在会自动创建）">
+        </div>
+        <button id="import-selected" class="btn tonal" type="button" disabled>
+          <svg class="icon"><use href="#i-add"></use></svg>导入选中
+        </button>
+      </div>
+
+      <div id="search-status" class="status-line" role="status"></div>
+      <ul id="search-results" class="song-list" aria-live="polite"></ul>
+      <div class="center">
+        <button id="load-more" class="btn text hidden" type="button">加载更多</button>
+      </div>
+    </section>
+
+    <!-- 导入 -->
+    <section id="tab-import" class="tab-panel" role="tabpanel" aria-label="导入" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h2><svg class="icon"><use href="#i-extension"></use></svg>导入洛雪音源脚本</h2>
+          <p class="hint">支持单个或多个 <code>.js</code> 脚本，也支持包含脚本的 <code>.zip</code>。批量导入会在后台逐个加载，请耐心等待。</p>
+        </div>
+        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="选择或拖入音源脚本">
+          <svg class="icon drop-icon"><use href="#i-upload"></use></svg>
+          <p><strong>点击选择文件</strong> 或将文件拖到这里</p>
+          <p class="hint">仅支持 .js / .zip，单文件最大 8MB</p>
+          <input id="source-file-input" type="file" accept=".js,.zip,application/javascript,application/zip" multiple hidden>
+        </div>
+        <ul id="import-file-list" class="file-list"></ul>
+        <div class="card-actions">
+          <label class="checkbox">
+            <input id="import-enable" type="checkbox" checked>
+            <span>导入后立即启用</span>
+          </label>
+          <button id="import-files-btn" class="btn filled" type="button" disabled>
+            <svg class="icon"><use href="#i-upload"></use></svg>导入文件
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2><svg class="icon"><use href="#i-link"></use></svg>从 URL 导入音源</h2>
+          <p class="hint">填写音源脚本或 ZIP 的直链地址。</p>
+        </div>
+        <div class="search-row">
+          <div class="field grow">
+            <svg class="icon field-icon"><use href="#i-link"></use></svg>
+            <input id="source-url-input" type="url" placeholder="https://example.com/source.js" autocomplete="off">
+          </div>
+          <button id="import-url-btn" class="btn tonal" type="button">导入</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2><svg class="icon"><use href="#i-library"></use></svg>批量导入歌曲到曲库</h2>
+          <p class="hint">粘贴搜索结果或自定义 JSON 数组，每项至少包含 <code>title</code> 与 <code>source_data</code>（含 <code>platform</code>、<code>songInfo</code>）。</p>
+        </div>
+        <div class="field textarea-field">
+          <textarea id="songs-json" rows="10" spellcheck="false" placeholder='[{"title":"歌曲名","artist":"歌手","source_data":{"platform":"kw","quality":"320k","songInfo":{...}}}]'></textarea>
+        </div>
+        <div class="card-actions">
+          <div class="field grow">
+            <svg class="icon field-icon"><use href="#i-playlist"></use></svg>
+            <input id="import-playlist-name" type="text" placeholder="导入到歌单（可选）">
+          </div>
+          <button id="import-json-btn" class="btn filled" type="button">
+            <svg class="icon"><use href="#i-add"></use></svg>导入到曲库
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 音源管理 -->
+    <section id="tab-sources" class="tab-panel" role="tabpanel" aria-label="音源管理" hidden>
+      <div class="card">
+        <div class="card-head row-between">
+          <div>
+            <h2><svg class="icon"><use href="#i-extension"></use></svg>已导入音源</h2>
+            <p class="hint" id="sources-summary">尚未读取音源列表</p>
+          </div>
+          <button id="refresh-sources" class="btn text" type="button">
+            <svg class="icon"><use href="#i-refresh"></use></svg>刷新
+          </button>
+        </div>
+        <div id="batch-banner" class="banner hidden" role="status"></div>
+        <ul id="source-list" class="source-list" aria-live="polite"></ul>
+      </div>
+    </section>
+
+    <footer class="footnote">
+      <p>本插件不附带任何音源脚本。内置搜索仅访问各平台公开接口。</p>
+      <p>仅供个人学习研究，禁止商用。音源脚本与数据版权归第三方所有，请自行清除产生的版权数据。</p>
+    </footer>
+  </main>
+
+  <dialog id="url-dialog" class="dialog">
+    <div class="dialog-head">
+      <h2>播放链接</h2>
+      <button id="url-close" class="icon-btn" type="button" title="关闭">
+        <svg class="icon"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+    <p id="url-meta" class="hint"></p>
+    <textarea id="url-text" class="url-text" readonly rows="4" spellcheck="false"></textarea>
+    <details id="url-headers-box" class="headers-box">
+      <summary>请求头</summary>
+      <pre id="url-headers"></pre>
+    </details>
+    <div class="dialog-actions">
+      <button id="url-open" class="btn text" type="button">在新标签页打开</button>
+      <button id="url-copy" class="btn filled" type="button">
+        <svg class="icon"><use href="#i-copy"></use></svg>复制链接
+      </button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="snackbar" role="status" aria-live="polite"></div>
+
+  <script src="static/js/app.js"></script>
+</body>
+</html>
