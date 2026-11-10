@@ -14,10 +14,16 @@ const SEARCH_PATH = '/api/search/topone'
 const RANDOM_PLAYLIST_PATH = '/api/songlist/random'
 const REGISTER_TIMEOUT_MS = 3000
 const RETRY_INTERVAL_MS = 60_000
+/**
+ * 已注册后仍要周期性重报：mi-song-harness 升级/重装后会读回持久化的旧记录，
+ * 只在首次成功后停发，会让后来新增的能力字段（如 playlistPath）永久缺失。
+ */
+const REFRESH_INTERVAL_MS = 5 * 60_000
 
 let registered = false
 let lastAttemptAt = 0
 let inflight: Promise<boolean> | null = null
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
 
 function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message
@@ -43,6 +49,7 @@ async function register(): Promise<boolean> {
     )) as { ok?: boolean; error?: string } | null
     if (result && result.ok === false) {
       songloft.log.warn('注册到 mi-song-harness 失败: ' + String(result.error || '未知错误'))
+      registered = false
       return false
     }
     registered = true
@@ -50,6 +57,7 @@ async function register(): Promise<boolean> {
     return true
   } catch (err) {
     // 未安装/未启用 mi-song-harness 时是常态，不刷 warn。
+    registered = false
     songloft.log.info('暂未注册到 mi-song-harness（未安装或未启用）: ' + errorMessage(err))
     return false
   }
@@ -57,13 +65,14 @@ async function register(): Promise<boolean> {
 
 /**
  * 确保已注册为 mi-song-harness 的搜索源候选。
- * force=false 时按 60s 节流，避免每次 HTTP 请求都触发一次 RPC。
+ * 未注册时按 60s 重试；已注册后按 5 分钟重报一次，让宿主更新后的新字段
+ * 能覆盖旧记录。force=true 跳过节流（定时刷新使用）。
  */
 export function ensureMiSongHarnessRegistration(force = false): Promise<boolean> {
-  if (registered) return Promise.resolve(true)
   if (inflight) return inflight
   const now = Date.now()
-  if (!force && now - lastAttemptAt < RETRY_INTERVAL_MS) return Promise.resolve(false)
+  const interval = registered ? REFRESH_INTERVAL_MS : RETRY_INTERVAL_MS
+  if (!force && now - lastAttemptAt < interval) return Promise.resolve(registered)
   lastAttemptAt = now
   const task = register()
   inflight = task
@@ -72,4 +81,24 @@ export function ensureMiSongHarnessRegistration(force = false): Promise<boolean>
   }
   task.then(clear, clear)
   return task
+}
+
+/** 周期性重报注册信息；插件停用或休眠时不再产生定时器。 */
+export function startMiSongHarnessRegistrationRefresh(): void {
+  if (refreshTimer !== null) return
+  const schedule = () => {
+    refreshTimer = setTimeout(() => {
+      refreshTimer = null
+      void ensureMiSongHarnessRegistration(true)
+      schedule()
+    }, REFRESH_INTERVAL_MS)
+  }
+  schedule()
+}
+
+export function stopMiSongHarnessRegistrationRefresh(): void {
+  if (refreshTimer !== null) {
+    clearTimeout(refreshTimer)
+    refreshTimer = null
+  }
 }

@@ -3,7 +3,7 @@ import { jsonResponse, type HTTPRequest, type HTTPResponse, type Router } from '
 import { RuntimeManager } from './engine'
 import { SourceManager } from './source/manager'
 import { createAppRouter } from './handlers'
-import { ensureMiSongHarnessRegistration } from './integrations/miSongHarness'
+import { ensureMiSongHarnessRegistration, startMiSongHarnessRegistrationRefresh, stopMiSongHarnessRegistrationRefresh } from './integrations/miSongHarness'
 import type { AppContext } from './handlers/shared'
 
 let ctx: AppContext | null = null
@@ -49,12 +49,15 @@ async function onInit(): Promise<void> {
     songloft.log.info('洛雪音源插件已初始化')
     // 异步注册为 mi-song-harness 的外部搜索源候选；未安装时静默失败，不阻塞初始化。
     void ensureMiSongHarnessRegistration()
+    // 周期性重报，覆盖 mi-song-harness 升级后读回旧注册记录的情况。
+    startMiSongHarnessRegistrationRefresh()
   } catch (err) {
     songloft.log.error('洛雪音源插件初始化失败: ' + errorMessage(err))
   }
 }
 
 async function onDeinit(): Promise<void> {
+  stopMiSongHarnessRegistrationRefresh()
   try {
     if (ctx) await ctx.sources.dispose()
   } catch (err) {
@@ -68,7 +71,7 @@ async function onDeinit(): Promise<void> {
 async function onHTTPRequest(req: HTTPRequest): Promise<HTTPResponse> {
   try {
     await ensureInit()
-    // 若 mi-song-harness 在本插件之后才安装/启用，打开插件页面时补一次注册（内部 60s 节流）。
+    // 打开插件页面时补一次注册；未注册时 60s 重试，已注册后 5 分钟重报。
     void ensureMiSongHarnessRegistration()
     if (!router) throw new Error('路由尚未就绪')
     return await router.handle(req)
