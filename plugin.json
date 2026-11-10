@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/songloft-org/plugin-toolchain/main/schemas/plugin.schema.json",
   "name": "洛雪音源",
-  "version": "2026.11.10.2",
+  "version": "2026.11.10.3",
   "description": "接入洛雪音乐生态：多平台搜索、歌单、排行榜，并用自定义音源脚本解析播放链接",
   "author": "gyyst",
   "homepage": "https://github.com/gyyst/songloft-plugin-lxmusic",
@@ -20,7 +20,7 @@
     "jsenv"
   ],
   "updateUrl": "https://raw.githubusercontent.com/gyyst/songloft-plugin-lxmusic/main/plugin.json",
-  "download_url": "https://github.com/gyyst/songloft-plugin-lxmusic/releases/download/v2026.11.10.2/lxmusic.jsplugin.zip",
-  "entryHash": "212bec1cf7b0eb531540fcfb04cc32ad97dc13d67b599b2ae65065181889a5bf",
-  "zipHash": "46396b8d01b72113f359d6b099496397cf5be52460703a4d1d5318ca13d962a9"
+  "download_url": "https://github.com/gyyst/songloft-plugin-lxmusic/releases/download/v2026.11.10.3/lxmusic.jsplugin.zip",
+  "entryHash": "d2ffb4059cf4f16de93121c2a46819d592cdba434a4cf54c8ca9ac036305844b",
+  "zipHash": "23f0ddc91db65f3cc9553e244b567e25c472d3df8611cb0356ec2c7163d8e187"
 }
