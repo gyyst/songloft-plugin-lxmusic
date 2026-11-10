@@ -141,7 +141,7 @@ function buildDedupKey(platform: string, songInfo: any): string {
  * - lyric/lyric_source：歌词 URL（宿主 LyricFetcher 格式）。
  * 缺 plugin_entry_path 时，解析型结果入 remote 库后将无法回放。
  */
-function withVoiceFields(item: any): any {
+export function withVoiceFields(item: any): any {
   const platform = String(item?.platform || '')
   const songInfo = item?.source_data?.songInfo || {}
   const lyricPath = platform && isPlatform(platform) ? buildLyricPath(platform, songInfo) : ''

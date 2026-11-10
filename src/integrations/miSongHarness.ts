@@ -11,6 +11,7 @@
 
 const TARGET_ENTRY_PATH = 'mi-song-harness'
 const SEARCH_PATH = '/api/search/topone'
+const RANDOM_PLAYLIST_PATH = '/api/songlist/random'
 const REGISTER_TIMEOUT_MS = 3000
 const RETRY_INTERVAL_MS = 60_000
 
@@ -37,7 +38,7 @@ async function register(): Promise<boolean> {
     const result = (await songloft.comm.call(
       TARGET_ENTRY_PATH,
       'register-search-provider',
-      { name: '洛雪音源', searchPath: SEARCH_PATH, icon: 'music_note' },
+      { name: '洛雪音源', searchPath: SEARCH_PATH, playlistPath: RANDOM_PLAYLIST_PATH, icon: 'music_note' },
       REGISTER_TIMEOUT_MS,
     )) as { ok?: boolean; error?: string } | null
     if (result && result.ok === false) {
@@ -45,7 +46,7 @@ async function register(): Promise<boolean> {
       return false
     }
     registered = true
-    songloft.log.info('已注册为 mi-song-harness 外部搜索源：' + SEARCH_PATH)
+    songloft.log.info('已注册为 mi-song-harness 外部搜索源：' + SEARCH_PATH + '（随机歌单 ' + RANDOM_PLAYLIST_PATH + '）')
     return true
   } catch (err) {
     // 未安装/未启用 mi-song-harness 时是常态，不刷 warn。

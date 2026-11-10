@@ -44,7 +44,7 @@
 | `POST` | `/api/sources/import-url` | JSON `{url, enable}` 从直链导入。 |
 | `DELETE` | `/api/sources?id=` | 删除音源脚本。 |
 | `PUT` | `/api/sources/toggle` | JSON `{id, enabled}` 启停音源。 |
-| `GET` | `/api/songlist/{tags,sorts,list,detail,search}` | 歌单浏览。 |
+| `GET` | `/api/songlist/{tags,sorts,list,detail,search,random}` | 歌单浏览；`random` 返回随机网络歌单（供 mi-song-harness「播放音乐」使用）。 |
 | `GET` | `/api/leaderboard/{boards,list}` | 排行榜浏览。 |
 | `POST` | `/api/direct/music/url` | 直接解析播放链接（返回统一 `{code,msg,data}`）。 |
 | `GET` | `/api/direct/lyric` | 歌词；默认返回宿主 LyricFetcher 需要的 `{code:0,data:{lyric,tlyric}}`，`format=text` 返回纯 LRC。 |
@@ -93,8 +93,7 @@ Songloft + mi-song-harness（智能音箱插件）
      `/api/v1/jsplugin/lxmusic/api/search/topone` 并启用；
    - 按需设置搜索优先级（本地优先 / 外部优先 / 并行）与超时（建议 ≥ 6 秒）。
    - 若没有自动出现，也可手动添加上述 URL（相对路径即可）。
-3. **对音箱说**「播放晴天」「我想听周杰伦的晴天」。mi-song-harness 解析出歌名后先查本地曲库；未命中则请求本插件的 `POST /api/search/topone`。本插件返回：
-   ```json
+3. **对音箱说**「播放晴天」「我想听周杰伦的晴天」。mi-song-harness 解析出歌名后先查本地曲库；未命中则请求本插件的 `POST /api/search/topone`。本插件返回：   ```json
    {
      "code": 0,
      "data": {
@@ -109,6 +108,7 @@ Songloft + mi-song-harness（智能音箱插件）
    }
    ```
    mi-song-harness 用 `/api/v1/songs/remote` 把结果写入宿主曲库；音箱点播时宿主再回调本插件 `/api/music/url`，由音源脚本实时解析出真实播放地址。
+4. **随机网络歌单**：本插件注册时还会带上 `playlistPath=/api/songlist/random`，mi-song-harness「播放音乐」无具体歌名时会请求它。接口在已导入可用音源脚本的平台中随机选一个，从歌单广场随机取一个歌单（失败时回退到随机排行榜），返回歌单名和最多 `limit` 首可直接入库的 topone 歌曲项。没有可用音源脚本时返回 404，mi-song-harness 会回落到曲库全部歌曲。
 
 ### 行为说明与排错
 
