@@ -66,6 +66,12 @@ const RANDOM_PLAYLIST_LEADERBOARD_TIMEOUT_MS = 4000
 /** 列表页并发竞速的平台数量上限。 */
 const RANDOM_PLAYLIST_LIST_PLATFORMS = 3
 /**
+ * 随机歌单优先使用直链解析更稳定的平台。
+ * mg 的歌单接口正常，但常见自定义音源对 migu 直链支持不完整
+ * （gdstudio 返回 source is not supported），拿到歌单也播不出声。
+ */
+const RANDOM_PLAYLIST_PREFERRED_PLATFORMS: PlatformId[] = ['kw', 'tx', 'wy']
+/**
  * 缓存已取到的歌单，后续「播放音乐」直接返回，避免每次现查 5~10 秒。
  * 只缓存本进程生命周期内的数据，不写存储。
  */
@@ -146,6 +152,17 @@ function cacheKey(playlist: RandomPlaylist): string {
   return `${playlist.platform}:${playlist.id}`
 }
 
+/**
+ * 选出参与竞速的平台：优先直链健康的首选平台；首选都不可用时退回其他候选，
+ * 不能因为健康度记录把自己筛成空集。显式指定平台时该平台就是唯一候选。
+ */
+function pickPlaylistPlatforms(ctx: AppContext, platforms: PlatformId[]): PlatformId[] {
+  const healthy = platforms.filter((platform) => ctx.runtimes.isPlatformUrlHealthy(platform))
+  const available = healthy.length ? healthy : platforms
+  const preferred = RANDOM_PLAYLIST_PREFERRED_PLATFORMS.filter((platform) => available.includes(platform))
+  return shuffled(preferred.length ? preferred : available).slice(0, RANDOM_PLAYLIST_LIST_PLATFORMS)
+}
+
 function rememberRandomPlaylist(playlist: RandomPlaylist): void {
   const now = Date.now()
   const key = cacheKey(playlist)
@@ -160,8 +177,11 @@ function rememberRandomPlaylist(playlist: RandomPlaylist): void {
 }
 
 /** 取一个缓存的歌单并从缓存移除，避免连续两次「播放音乐」播到同一张歌单。 */
-function takeCachedRandomPlaylist(platforms: PlatformId[]): RandomPlaylist | null {
+function takeCachedRandomPlaylist(ctx: AppContext, platforms: PlatformId[]): RandomPlaylist | null {
   const now = Date.now()
+  // 近期直链解析失败的平台不再从缓存取，避免继续播上一轮取到的不可播歌单。
+  const healthy = platforms.filter((platform) => ctx.runtimes.isPlatformUrlHealthy(platform))
+  const allowed = healthy.length ? healthy : platforms
   // 先清理过期项，再收集可用项，避免一边删除一边记录下标导致下标错位。
   for (let i = randomPlaylistCache.length - 1; i >= 0; i--) {
     if (now - randomPlaylistCache[i].savedAt > RANDOM_PLAYLIST_CACHE_TTL_MS) randomPlaylistCache.splice(i, 1)
@@ -169,7 +189,7 @@ function takeCachedRandomPlaylist(platforms: PlatformId[]): RandomPlaylist | nul
   const usable: Array<{ entry: CachedRandomPlaylist; index: number }> = []
   for (let i = 0; i < randomPlaylistCache.length; i++) {
     const entry = randomPlaylistCache[i]
-    if (platforms.includes(entry.playlist.platform) && entry.playlist.songs.length >= RANDOM_PLAYLIST_MIN_SONGS) {
+    if (allowed.includes(entry.playlist.platform) && entry.playlist.songs.length >= RANDOM_PLAYLIST_MIN_SONGS) {
       usable.push({ entry, index: i })
     }
   }
@@ -263,7 +283,7 @@ async function fetchPlaylistFromAnyPlatform(
   quality: string,
   limit: number,
 ): Promise<RandomPlaylist | null> {
-  const racers = shuffled(platforms).slice(0, RANDOM_PLAYLIST_LIST_PLATFORMS)
+  const racers = pickPlaylistPlatforms(ctx, platforms)
   const listed = await firstFulfilled(
     racers.map((platform) => listPlatformPlaylists(platform)),
     RANDOM_PLAYLIST_LIST_TIMEOUT_MS,
@@ -296,7 +316,7 @@ async function fetchPlaylistFromAnyPlatform(
   }
   // 歌单广场整体失败时才试排行榜；实测榜单歌曲列表常在 20s 以上，只给很短预算。
   return await firstFulfilled(
-    shuffled(platforms).slice(0, 2).map(async (platform): Promise<RandomPlaylist> => {
+    pickPlaylistPlatforms(ctx, platforms).slice(0, 2).map(async (platform): Promise<RandomPlaylist> => {
       const platformQuality = ctx.runtimes.pickPlatformQuality(platform, quality)
       const playlist = await pickLeaderboardPlaylist(platform, platformQuality, limit)
       if (!playlist) throw new Error(`no leaderboard playlist (${platform})`)
@@ -401,7 +421,7 @@ export function registerSongListRoutes(router: Router, ctx: AppContext): void {
     const startedAt = Date.now()
     try {
       // 已缓存时立即返回（实测现查详情 5~10 秒，语音指令等不起）；后台补下一张。
-      const cached = takeCachedRandomPlaylist(platforms)
+      const cached = takeCachedRandomPlaylist(ctx, platforms)
       if (cached) {
         songloft.log.info(`[songlist] random playlist from cache: platform=${cached.platform} name="${cached.name}" songs=${cached.songs.length}`)
         refillRandomPlaylistCache(ctx, platforms, quality, limit)

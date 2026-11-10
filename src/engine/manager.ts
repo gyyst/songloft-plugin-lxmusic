@@ -9,10 +9,19 @@ import { errorMessage, QUALITY_ORDER, type ResolvedSourceUrl } from './types'
 
 type PlatformLoader = (platform: string) => Promise<void>
 
+/**
+ * 直链解析失败的平台在随机歌单里降级多久。
+ * 元数据可取不代表能播：例如 mg 的歌单接口正常，但常见自定义音源
+ * 对 migu 直链支持不完整（gdstudio 直接返回 source is not supported）。
+ */
+const URL_FAILURE_COOLDOWN_MS = 10 * 60_000
+
 export class RuntimeManager {
   private runtimes = new Map<string, SourceRuntime>()
   private byPlatform = new Map<string, SourceRuntime[]>()
   private platformLoader: PlatformLoader | null = null
+  /** 各平台最近一次直链解析的结果；同一毫秒内的成功/失败不能互相覆盖。 */
+  private urlHealth = new Map<string, { ok: boolean; at: number }>()
 
   setPlatformLoader(loader: PlatformLoader): void {
     this.platformLoader = loader
@@ -69,6 +78,20 @@ export class RuntimeManager {
     return this.readyRuntimes(platform).length > 0
   }
 
+  private recordUrlResult(platform: string, ok: boolean): void {
+    this.urlHealth.set(platform, { ok, at: Date.now() })
+  }
+
+  /**
+   * 平台直链近期是否可用；没有失败记录时视为可用。
+   * 只用于随机歌单选平台，不阻止用户显式点播该平台的歌曲。
+   */
+  isPlatformUrlHealthy(platform: string): boolean {
+    const entry = this.urlHealth.get(platform)
+    if (!entry || entry.ok) return true
+    return Date.now() - entry.at >= URL_FAILURE_COOLDOWN_MS
+  }
+
   private readyRuntimes(platform: string): SourceRuntime[] {
     const list = (this.byPlatform.get(platform) || []).filter(
       (runtime) => runtime.status === 'ready' && runtime.supportsAction(platform, 'musicUrl'),
@@ -92,9 +115,23 @@ export class RuntimeManager {
   }
 
   /**
-   * 解析播放链接。若当前没有 ready 源，会先请求 SourceManager 懒加载。
+   * 解析播放链接，并记录该平台的直链健康度供随机歌单降级使用。
    */
   async getMusicUrl(platform: string, quality: string, musicInfo: any): Promise<ResolvedSourceUrl> {
+    try {
+      const resolved = await this.resolveMusicUrl(platform, quality, musicInfo)
+      this.recordUrlResult(platform, true)
+      return resolved
+    } catch (err) {
+      this.recordUrlResult(platform, false)
+      throw err
+    }
+  }
+
+  /**
+   * 解析播放链接。若当前没有 ready 源，会先请求 SourceManager 懒加载。
+   */
+  private async resolveMusicUrl(platform: string, quality: string, musicInfo: any): Promise<ResolvedSourceUrl> {
     let candidates = this.readyRuntimes(platform)
     if (!candidates.length && this.platformLoader) {
       try {
